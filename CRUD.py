@@ -5,7 +5,7 @@ from tkinter import messagebox
 miConexion=sqlite3.Connection
 
 
-
+#GIT
 root=Tk()
 root.title("CRUD")
 barraMenu=Menu(root)

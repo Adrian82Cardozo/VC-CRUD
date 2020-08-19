@@ -2,8 +2,16 @@ import sqlite3
 from tkinter import *
 from tkinter import messagebox
 
-miConexion=sqlite3.Connection
+def Conectar():
+   try:
+      global miConexion
+      miConexion=sqlite3.connect("Usuarios")
+      global miCursor
+      miCursor=miConexion.cursor()
+   except:
+      pass
 
+Conectar()
 
 #GIT
 root=Tk()
@@ -49,7 +57,7 @@ def Label_Psword():
 
 datosPsword=StringVar()
 def Texto_Psword():
-   textoPsword=Entry(root,font =("Arial",10), textvariable = datosPsword)
+   textoPsword=Entry(root,font =("Arial",10),show="*", textvariable = datosPsword)
    textoPsword.grid(row=3,column=2,padx=10,pady=10)
 ###############################
 def Label_Apellido():
@@ -79,15 +87,24 @@ def Label_Comentario():
 
 datosComentario=StringVar()
 datosComentario=""
-def Texto_Comentario():
-   textoComentario=Text(root,font=("Arial",10), height=7, width=20)
-   textoComentario.grid(row=6,column=2,padx=10,pady=10)
-   textoComentario.insert(INSERT,datosComentario)
+#def Texto_Comentario():
+textoComentario=Text(root,font=("Arial",10), height=7, width=20)
+textoComentario.grid(row=6,column=2,padx=10,pady=10)
+textoComentario.insert(INSERT,datosComentario)
+scrollvert=Scrollbar(root,command=textoComentario.yview)
+scrollvert.grid(row=6,column=3,sticky="nsew")
+textoComentario.config(yscrollcommand=scrollvert.set)
+
 ###############################
 
 def afterBBDD():
-   miConexion.commit()
-   miConexion.close()
+   try:
+      miConexion.commit()
+      miConexion.close()
+   except:
+      print("")
+   print("")
+   
 
 def AccionCrear():
    miConexion=sqlite3.connect("Usuarios")
@@ -101,20 +118,27 @@ def AccionCrear():
          DIRECCION VARCHAR(50),
          COMENTARIO VARCHAR(255)
          )""")
+      Conectar()
       messagebox.showinfo("CRUD","La base de datos se creo correctamente")
    except:
       messagebox.showinfo("CRUD","La base de datos ya está creada")
    afterBBDD()
 
 def AccionAgregar():
-   dataUsuario[
-      (datosNombre.get(),datosPsword.get(),datosApellido.get(),datosDireccion.get(),datosComentario.gett())
-   ]
-   miCursor.execute("INSERT INTO PRODUCTOS VALUES(NULL,?,?,?,?,?)",dataUsuario)
+   try:   
+      dataUsuario=[
+         (datosNombre.get(),datosPsword.get(),datosApellido.get(),datosDireccion.get(),textoComentario.get(1.0,END))
+      ]
+      miCursor.executemany("INSERT INTO USUARIOS VALUES(NULL,?,?,?,?,?)",dataUsuario)
+      afterBBDD()
+      messagebox.showinfo("CRUD","Se creo el usuario correctamente")
+   except:
+         messagebox.showerror("CRUD","Un error ha ocurrido")
 
 def AccionLeer():
    if textoID == Entry(root,font =("Arial",10), state="disabled", textvariable = valorID):
       textoID = Entry(root,font =("Arial",10), state="enabled", textvariable = valorID)
+      messagebox.showinfo("CRUD","Introduce una ID")
    elif valorID.get()=="":
       messagebox.showerror("CRUD","Introduce una ID")
    else:
@@ -128,7 +152,7 @@ def AccionLeer():
 #ValueError
 ###############################
 def Boton_Crear():
-   botonCrear=Button(root, text="Crear", width=6, command=lambda:numeroPulsado("7"))
+   botonCrear=Button(root, text="Crear", width=6, command=lambda:AccionAgregar())
    botonCrear.place(x=10,y=370)
 
 def Boton_Leer():
@@ -156,7 +180,7 @@ def El_menu():
 
    Crudmenu=Menu(barraMenu,tearoff=0)
    barraMenu.add_cascade(label="CRUD",menu=Crudmenu)
-   Crudmenu.add_command(label="Create")
+   Crudmenu.add_command(label="Create",command=lambda:AccionAgregar())
    Crudmenu.add_command(label="Read")
    Crudmenu.add_command(label="Update")
    Crudmenu.add_command(label="Delete")
@@ -172,7 +196,8 @@ def borra_campos():
    datosPsword.set("")
    datosApellido.set("")
    datosDireccion.set("")
-   datosComentario.set("")
+   textoComentario.delete(1.0,END)
+   
 
 def funciones():
    El_menu()
@@ -187,7 +212,7 @@ def funciones():
    Label_Direccion()
    Texto_Direccion()
    Label_Comentario()
-   Texto_Comentario()
+   #Texto_Comentario()
    Boton_Crear()
    Boton_Leer()
    Boton_Actualizar()

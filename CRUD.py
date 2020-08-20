@@ -37,6 +37,7 @@ def Label_ID():
 
 valorID=StringVar()
 textoID=Entry(root,font =("Arial",10), state="disabled", textvariable = valorID)
+controlID=False
 textoID.grid(row=1,column=2,padx=10,pady=10)
 #textoID.config(background="black",fg="light blue", justify="right")
 ###############################
@@ -89,6 +90,7 @@ datosComentario=StringVar()
 datosComentario=""
 #def Texto_Comentario():
 textoComentario=Text(root,font=("Arial",10), height=7, width=20)
+textoComentario.setvar(datosComentario)
 textoComentario.grid(row=6,column=2,padx=10,pady=10)
 textoComentario.insert(INSERT,datosComentario)
 scrollvert=Scrollbar(root,command=textoComentario.yview)
@@ -135,19 +137,33 @@ def AccionAgregar():
    except:
          messagebox.showerror("CRUD","Un error ha ocurrido")
 
+
 def AccionLeer():
-   if textoID == Entry(root,font =("Arial",10), state="disabled", textvariable = valorID):
-      textoID = Entry(root,font =("Arial",10), state="enabled", textvariable = valorID)
-      messagebox.showinfo("CRUD","Introduce una ID")
-   elif valorID.get()=="":
-      messagebox.showerror("CRUD","Introduce una ID")
-   else:
-      try:
-         miCursor.execute("SELECT * FROM PRODUCTOS WHERE ID =",valorID)
-         dataUsuario=miCursor.fetchall()
+   global controlID 
+   global textoID
+   global valorID
+   x = "'"+ valorID.get() + "'" 
+   try:
+      if controlID == False:
+         textoID.destroy()
+         textoID = Entry(root,font =("Arial",10), state="normal", textvariable = valorID)
+         textoID.grid(row=1,column=2,padx=10,pady=10)
+         controlID = True
+         messagebox.showinfo("CRUD","Introduce una ID")
+      elif valorID.get()=="":
+         messagebox.showerror("CRUD","Introduce una ID")
+      else:
+         miCursor.execute("SELECT * FROM USUARIOS WHERE ID ="+ x)
+         datalectura=miCursor.fetchall()
+         DevuelveLectura=(datalectura[0])
+         datosNombre.set(DevuelveLectura[1])
+         datosPsword.set(DevuelveLectura[2])
+         datosApellido.set(DevuelveLectura[3])
+         datosDireccion.set(DevuelveLectura[4])
+         textoComentario.insert(END, DevuelveLectura[5])
          textoID=Entry(root,font =("Arial",10), state="disabled", textvariable = valorID)
-      except:
-         messagebox.showerror("CRUD","Introdusca una ID válida")
+   except:
+      messagebox.showerror("CRUD","Introdusca una ID válida")
 
 #ValueError
 ###############################
@@ -156,7 +172,7 @@ def Boton_Crear():
    botonCrear.place(x=10,y=370)
 
 def Boton_Leer():
-   botonLeer=Button(root, text="Leer", width=6, command=lambda:numeroPulsado("7"))
+   botonLeer=Button(root, text="Leer", width=6, command=lambda:AccionLeer())
    botonLeer.place(x=75,y=370)
 
 def Boton_Actualizar():

@@ -1,6 +1,7 @@
 import sqlite3
 from tkinter import *
 from tkinter import messagebox
+#from tkinter.ttk import *
 
 def Conectar():
    try:
@@ -88,14 +89,15 @@ def Label_Comentario():
 
 datosComentario=StringVar()
 datosComentario=""
-#def Texto_Comentario():
-textoComentario=Text(root,font=("Arial",10), height=7, width=20)
-textoComentario.setvar(datosComentario)
-textoComentario.grid(row=6,column=2,padx=10,pady=10)
-textoComentario.insert(INSERT,datosComentario)
-scrollvert=Scrollbar(root,command=textoComentario.yview)
-scrollvert.grid(row=6,column=3,sticky="nsew")
-textoComentario.config(yscrollcommand=scrollvert.set)
+def Texto_Comentario():
+   global textoComentario
+   textoComentario=Text(root,font=("Arial",10), height=7, width=20)
+   textoComentario.setvar(datosComentario)
+   textoComentario.grid(row=6,column=2,padx=10,pady=10)
+   textoComentario.insert(INSERT,datosComentario)
+   scrollvert=Scrollbar(root,command=textoComentario.yview)
+   scrollvert.grid(row=6,column=3,sticky="nsew")
+   textoComentario.config(yscrollcommand=scrollvert.set)
 
 ###############################
 
@@ -167,21 +169,65 @@ def AccionLeer():
 
 #ValueError
 ###############################
+
+def ocultar():
+   originales = True
+   if originales==True:
+      botonCrear.place_forget()
+      botonLeer.place_forget()
+      botonActualizar.place_forget()
+      botonBorrar.place_forget()
+      botonGuardar.place(x=75,y=370)
+      botonCancelar.place(x=140,y=370)
+      originales=False
+   else:
+      botonCrear.place(x=10,y=370)
+      botonLeer.place(x=75,y=370)
+      botonActualizar.place(x=140,y=370)
+      botonBorrar.place(x=210,y=370)
+      botonGuardar.place_forget()
+      botonCancelar.place_forget()
+      originales=True
+
 def Boton_Crear():
+   global botonCrear
    botonCrear=Button(root, text="Crear", width=6, command=lambda:AccionAgregar())
    botonCrear.place(x=10,y=370)
 
 def Boton_Leer():
+   global botonLeer
    botonLeer=Button(root, text="Leer", width=6, command=lambda:AccionLeer())
    botonLeer.place(x=75,y=370)
 
 def Boton_Actualizar():
-   botonActualizar=Button(root, text="Actualizar", width=7, command=lambda:numeroPulsado("7"))
+   global botonActualizar
+   botonActualizar=Button(root, text="Actualizar", width=7, command=lambda:ocultar())
    botonActualizar.place(x=140,y=370)
 
 def Boton_Borrar():
+   global botonBorrar
    botonBorrar=Button(root, text="Borrar", width=6, command=lambda:numeroPulsado("7"))
    botonBorrar.place(x=210,y=370)
+
+def Boton_Guardar():
+   global botonGuardar
+   botonGuardar=Button(root, text="Guardar", width=6) 
+   #botonGuardar.place_forget()
+   #botonGuardar.place(x=75,y=370)
+
+def Boton_Cancelar():
+   global botonCancelar
+   botonCancelar=Button(root, text="Cancelar", width=7,command=lambda:ocultar()) 
+   #botonCancelar.place_forget()
+   #botonCancelar.place(x=140,y=370)
+
+def Boton_Siguiente():
+   global botonSiguiente
+   imgSiguiente=PhotoImage(file= r"Siguiente.png")
+   imgSiguiente=imgSiguiente.subsample(1,1)
+   botonSiguiente=Button(root,height = "200",width="200" ,text="HHHHH" ,image=imgSiguiente,compound = TOP)
+   botonSiguiente.place(x=14,y=20)
+Boton_Guardar()
 ###############################
 
 def El_menu():
@@ -228,11 +274,14 @@ def funciones():
    Label_Direccion()
    Texto_Direccion()
    Label_Comentario()
-   #Texto_Comentario()
+   Texto_Comentario()
    Boton_Crear()
    Boton_Leer()
    Boton_Actualizar()
    Boton_Borrar()
+   Boton_Guardar()
+   Boton_Cancelar()
+   Boton_Siguiente()
 
 funciones()
 

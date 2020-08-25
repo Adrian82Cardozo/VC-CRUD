@@ -1,7 +1,10 @@
 import sqlite3
+#import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
-#from tkinter.ttk import *
+from tkinter import simpledialog
+
+#application_window = tk.Tk()
 
 def Conectar():
    try:
@@ -104,7 +107,6 @@ def Texto_Comentario():
 def afterBBDD():
    try:
       miConexion.commit()
-      miConexion.close()
    except:
       print("")
    print("")
@@ -129,16 +131,17 @@ def AccionCrear():
    afterBBDD()
 
 def AccionAgregar():
-   try:   
+   #try:   
       dataUsuario=[
          (datosNombre.get(),datosPsword.get(),datosApellido.get(),datosDireccion.get(),textoComentario.get(1.0,END))
       ]
       miCursor.executemany("INSERT INTO USUARIOS VALUES(NULL,?,?,?,?,?)",dataUsuario)
+      #miCursor.execute("SELECT last_insert_ID();")
       afterBBDD()
-      messagebox.showinfo("CRUD","Se creo el usuario correctamente")
-   except:
-         messagebox.showerror("CRUD","Un error ha ocurrido")
-
+      ids = miCursor.lastrowid
+      messagebox.showinfo("CRUD","Se creo el usuario correctamente\nEsta es su ID:"+ str(ids))
+   #except:
+   #      messagebox.showerror("CRUD","Un error ha ocurrido")
 
 def AccionLeer():
    global controlID 
@@ -167,12 +170,68 @@ def AccionLeer():
    except:
       messagebox.showerror("CRUD","Introdusca una ID válida")
 
+def AccionActualizar(deGuardar):
+   global controlID
+   global textoID
+   global valorID
+   x = "'"+ valorID.get() + "'" 
+   if controlID == False:
+      textoID.destroy()
+      textoID = Entry(root,font =("Arial",10), state="normal", textvariable = valorID)
+      textoID.grid(row=1,column=2,padx=10,pady=10)
+      controlID = True
+      messagebox.showinfo("CRUD","Introduce una ID y datos a actualizar")
+   elif valorID.get()=="":
+      messagebox.showerror("CRUD","Introduce una ID")
+   elif deGuardar==True:
+      if  datosNombre.get() == "" and datosPsword.get() == "" and datosApellido.get() == "" and datosDireccion.get() == "" and textoComentario.get(1.0,END) == "\n":
+         messagebox.showwarning("CRUD","Introdusca un valor.\nSi se arrepiente, puede darle al boton de suscribirse, de cancelar.")
+      else:
+         try:
+            #print("'"+ textoComentario.get(1.0,END)+"'")
+            if datosNombre.get() != "":
+               miCursor.execute("UPDATE USUARIOS SET NOMBRE_USUARIO='"+datosNombre.get()+ "' WHERE ID=" + x)
+            if datosPsword.get() != "":
+               miCursor.execute("UPDATE USUARIOS SET CONTRASEÑA='"+datosPsword.get()+ "' WHERE ID=" + x)
+            if datosApellido.get() != "":
+               miCursor.execute("UPDATE USUARIOS SET APELLIDO='"+datosApellido.get()+ "' WHERE ID=" + x)
+            if datosDireccion.get() != "":
+               miCursor.execute("UPDATE USUARIOS SET DIRECCION='"+datosDireccion.get()+ "' WHERE ID=" + x)
+            if textoComentario.get(1.0,END) != "\n":
+               miCursor.execute("UPDATE USUARIOS SET COMENTARIO='"+textoComentario.get(1.0,END)+ "' WHERE ID=" + x)
+            messagebox.showinfo("CRUD","Se actualizaron los datos con éxito")
+            borra_campos()
+            afterBBDD()
+         except:
+            messagebox.showerror("CRUD","Un error ha ocurrido")
+   #miCursor.execute("UPDATE USUARIOS SET PRECIO=35 WHERE ID=1")
+   #//                                 Tambien puede ser: NOMBRE_ARTICULO='pelota'
+
+def AccionBorrar():
+   #simpledialog.TclError("CRUD",)
+   answer = simpledialog.askinteger("CRUD", "Ingrese la ID a Borrar")
+   if answer==None:
+      messagebox.showerror("CRUD","No introdujo nada -_-")
+   else:
+      yesno = messagebox.askquestion("CRUD", "¿Estás seguro?")
+      if yesno=="yes":
+         try:
+            miCursor.execute("DELETE FROM USUARIOS WHERE ID="+ "'"+ str(answer) +"'")
+            afterBBDD()
+            messagebox.showinfo("CRUD","Se borraron los datos con éxito")
+         except:
+            messagebox.showerror("CRUD","Un error ha ocurrido")
+
+
 #ValueError
 ###############################
-
-def ocultar():
-   originales = True
-   if originales==True:
+originales = True
+def ocultar(tipo):
+   global originales
+   global controlID
+   global textoID
+   if tipo=="Actualizar" and originales==True:
+      AccionActualizar(False)
       botonCrear.place_forget()
       botonLeer.place_forget()
       botonActualizar.place_forget()
@@ -180,7 +239,11 @@ def ocultar():
       botonGuardar.place(x=75,y=370)
       botonCancelar.place(x=140,y=370)
       originales=False
-   else:
+   elif tipo=="Actualizar" and originales==False:
+      textoID.destroy()
+      textoID = Entry(root,font =("Arial",10), state="disabled", textvariable = valorID)
+      textoID.grid(row=1,column=2,padx=10,pady=10)
+      controlID=False
       botonCrear.place(x=10,y=370)
       botonLeer.place(x=75,y=370)
       botonActualizar.place(x=140,y=370)
@@ -201,23 +264,23 @@ def Boton_Leer():
 
 def Boton_Actualizar():
    global botonActualizar
-   botonActualizar=Button(root, text="Actualizar", width=7, command=lambda:ocultar())
+   botonActualizar=Button(root, text="Actualizar", width=7, command=lambda:ocultar("Actualizar"))
    botonActualizar.place(x=140,y=370)
 
 def Boton_Borrar():
    global botonBorrar
-   botonBorrar=Button(root, text="Borrar", width=6, command=lambda:numeroPulsado("7"))
+   botonBorrar=Button(root, text="Borrar", width=6, command=lambda:AccionBorrar())
    botonBorrar.place(x=210,y=370)
 
 def Boton_Guardar():
    global botonGuardar
-   botonGuardar=Button(root, text="Guardar", width=6) 
+   botonGuardar=Button(root, text="Guardar", width=6, command=lambda:AccionActualizar(True)) 
    #botonGuardar.place_forget()
    #botonGuardar.place(x=75,y=370)
 
 def Boton_Cancelar():
    global botonCancelar
-   botonCancelar=Button(root, text="Cancelar", width=7,command=lambda:ocultar()) 
+   botonCancelar=Button(root, text="Cancelar", width=7,command=lambda:ocultar("Actualizar")) 
    #botonCancelar.place_forget()
    #botonCancelar.place(x=140,y=370)
 
@@ -225,8 +288,9 @@ def Boton_Siguiente():
    global botonSiguiente
    imgSiguiente=PhotoImage(file= r"Siguiente.png")
    imgSiguiente=imgSiguiente.subsample(1,1)
-   botonSiguiente=Button(root,height = "200",width="200" ,text="HHHHH" ,image=imgSiguiente,compound = TOP)
-   botonSiguiente.place(x=14,y=20)
+   botonSiguiente=Button(root,text=">" )#image=imgSiguiente,compound = TOP)
+   #botonSiguiente.place(x=140,y=370)
+
 Boton_Guardar()
 ###############################
 
@@ -243,9 +307,9 @@ def El_menu():
    Crudmenu=Menu(barraMenu,tearoff=0)
    barraMenu.add_cascade(label="CRUD",menu=Crudmenu)
    Crudmenu.add_command(label="Create",command=lambda:AccionAgregar())
-   Crudmenu.add_command(label="Read")
-   Crudmenu.add_command(label="Update")
-   Crudmenu.add_command(label="Delete")
+   Crudmenu.add_command(label="Read",command=lambda:AccionLeer())
+   Crudmenu.add_command(label="Update",command=lambda:ocultar("Actualizar"))
+   Crudmenu.add_command(label="Delete",command=lambda:AccionBorrar())
 
    Ayudamenu=Menu(barraMenu,tearoff=0)
    barraMenu.add_cascade(label="Ayuda",menu=Ayudamenu)
@@ -285,7 +349,5 @@ def funciones():
 
 funciones()
 
-
-
-
 root.mainloop()
+miConexion.close()

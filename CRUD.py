@@ -137,7 +137,7 @@ def Ultima_ID():
    global DevuelveLectura
    miCursor.execute("SELECT * FROM USUARIOS")
    datalectura=miCursor.fetchall()
-   lenID= len (datalectura) -1
+   lenID= len(datalectura) -1
    DevuelveLectura=(datalectura[lenID])
    lastID=DevuelveLectura[0]
 
@@ -345,8 +345,8 @@ def AccionSiguiente(Siguiente):
       Cambio=-1
    if First==False:
       Indice =0
-      Ultima_ID()
-      Indice= lastID
+   #   Ultima_ID()
+   #   Indice= lastID
       First=True
    else:
       Indice= Indice + Cambio

@@ -7,14 +7,14 @@ from tkinter import simpledialog
 #application_window = tk.Tk()
 
 def Conectar():
+   global Bloquear
    try:
       global miConexion
       miConexion=sqlite3.connect("Usuarios")
       global miCursor
       miCursor=miConexion.cursor()
    except:
-      pass
-
+      Bloquear = True
 Conectar()
 
 #GIT
@@ -130,16 +130,38 @@ def AccionCrear():
       messagebox.showinfo("CRUD","La base de datos ya está creada")
    afterBBDD()
 
+def Ultima_ID():
+   global lastID
+   global lenID
+   global datalectura
+   global DevuelveLectura
+   miCursor.execute("SELECT * FROM USUARIOS")
+   datalectura=miCursor.fetchall()
+   lenID= len (datalectura) -1
+   DevuelveLectura=(datalectura[lenID])
+   lastID=DevuelveLectura[0]
+
+def The_ID():
+   Ultima_ID()
+   global TheIDs
+   #O=0
+   TheIDs=[]
+   for O in range(lenID + 1):
+      DevuelveLectura=(datalectura[O])
+      TheIDs.append (DevuelveLectura[0])     
+
 def AccionAgregar():
    #try:   
       dataUsuario=[
          (datosNombre.get(),datosPsword.get(),datosApellido.get(),datosDireccion.get(),textoComentario.get(1.0,END))
       ]
+      lnombre=datosNombre.get()
+      A=datosNombre.get()
       miCursor.executemany("INSERT INTO USUARIOS VALUES(NULL,?,?,?,?,?)",dataUsuario)
-      #miCursor.execute("SELECT last_insert_ID();")
       afterBBDD()
-      ids = miCursor.lastrowid
-      messagebox.showinfo("CRUD","Se creo el usuario correctamente\nEsta es su ID:"+ str(ids))
+      Ultima_ID()
+      #ids = miCursor.lastrowid
+      messagebox.showinfo("CRUD","Se creo el usuario correctamente\nEsta es su ID:"+ str(lastID))
    #except:
    #      messagebox.showerror("CRUD","Un error ha ocurrido")
 
@@ -147,9 +169,12 @@ def AccionLeer():
    global controlID 
    global textoID
    global valorID
+   #valorID.set("1")
    x = "'"+ valorID.get() + "'" 
    try:
+      """
       if controlID == False:
+         
          textoID.destroy()
          textoID = Entry(root,font =("Arial",10), state="normal", textvariable = valorID)
          textoID.grid(row=1,column=2,padx=10,pady=10)
@@ -158,17 +183,21 @@ def AccionLeer():
       elif valorID.get()=="":
          messagebox.showerror("CRUD","Introduce una ID")
       else:
-         miCursor.execute("SELECT * FROM USUARIOS WHERE ID ="+ x)
-         datalectura=miCursor.fetchall()
-         DevuelveLectura=(datalectura[0])
-         datosNombre.set(DevuelveLectura[1])
-         datosPsword.set(DevuelveLectura[2])
-         datosApellido.set(DevuelveLectura[3])
-         datosDireccion.set(DevuelveLectura[4])
-         textoComentario.insert(END, DevuelveLectura[5])
-         textoID=Entry(root,font =("Arial",10), state="disabled", textvariable = valorID)
+      """
+      borra_campos()
+      miCursor.execute("SELECT * FROM USUARIOS WHERE ID ="+ x)
+      datalectura=miCursor.fetchall()
+      DevuelveLectura=(datalectura[0])
+      datosNombre.set(DevuelveLectura[1])
+      datosPsword.set(DevuelveLectura[2])
+      datosApellido.set(DevuelveLectura[3])
+      datosDireccion.set(DevuelveLectura[4])
+      textoComentario.insert(END, DevuelveLectura[5])
+      textoID=Entry(root,font =("Arial",10), state="disabled", textvariable = valorID)
    except:
-      messagebox.showerror("CRUD","Introdusca una ID válida")
+      borra_campos()
+      datosNombre.set("No existo :O")
+      #messagebox.showerror("CRUD","Introdusca una ID válida")
 
 def AccionActualizar(deGuardar):
    global controlID
@@ -251,6 +280,24 @@ def ocultar(tipo):
       botonGuardar.place_forget()
       botonCancelar.place_forget()
       originales=True
+   elif tipo=="Leer" and originales==True:
+      botonSiguiente.place(x=140,y=370)
+      botonAnterior.place(x=75,y=370)
+      AccionLeer()
+      botonCrear.place_forget()
+      botonLeer.place_forget()
+      botonActualizar.place_forget()
+      botonBorrar.place_forget()
+      originales=False
+   elif tipo=="Leer"and originales==True:
+      botonCrear.place(x=10,y=370)
+      botonLeer.place(x=75,y=370)
+      botonActualizar.place(x=140,y=370)
+      botonBorrar.place(x=210,y=370)
+      botonSiguiente.place_forget()
+      botonAnterior.place_forget()
+      botonX.place_forget()
+      originales=True
 
 def Boton_Crear():
    global botonCrear
@@ -259,7 +306,7 @@ def Boton_Crear():
 
 def Boton_Leer():
    global botonLeer
-   botonLeer=Button(root, text="Leer", width=6, command=lambda:AccionLeer())
+   botonLeer=Button(root, text="Leer", width=6, command=lambda:ocultar("Leer"))
    botonLeer.place(x=75,y=370)
 
 def Boton_Actualizar():
@@ -277,6 +324,7 @@ def Boton_Guardar():
    botonGuardar=Button(root, text="Guardar", width=6, command=lambda:AccionActualizar(True)) 
    #botonGuardar.place_forget()
    #botonGuardar.place(x=75,y=370)
+Boton_Guardar()
 
 def Boton_Cancelar():
    global botonCancelar
@@ -284,14 +332,61 @@ def Boton_Cancelar():
    #botonCancelar.place_forget()
    #botonCancelar.place(x=140,y=370)
 
+First=False
+
+def AccionSiguiente(Siguiente):
+   The_ID()
+   global First
+   global Cambio
+   global Indice
+   if Siguiente==True:
+      Cambio=1
+   else:
+      Cambio=-1
+   if First==False:
+      Indice =0
+      Ultima_ID()
+      Indice= lastID
+      First=True
+   else:
+      Indice= Indice + Cambio
+   try:
+      En=TheIDs[Indice]
+      valorID.set(En)
+   except IndexError:
+      First=False
+      AccionSiguiente(Siguiente)
+      
+   AccionLeer()
+   
+   """
+   try:
+      valorID.set(int(valorID.get()) + 1)
+   except ValueError:
+      valorID.set(int(0) + 1)
+   AccionLeer()
+   """
+
+def Accion_Ultimo():
+   pass
+
+Cambio= 0
+
+def Boton_x():
+   global botonX
+   botonX=Button(root, text="X", width=7,command=lambda:ocultar("Actualizar")) 
+   
 def Boton_Siguiente():
    global botonSiguiente
-   imgSiguiente=PhotoImage(file= r"Siguiente.png")
-   imgSiguiente=imgSiguiente.subsample(1,1)
-   botonSiguiente=Button(root,text=">" )#image=imgSiguiente,compound = TOP)
+   """imgSiguiente=PhotoImage(file= r"Siguiente.png")
+   imgSiguiente=imgSiguiente.subsample(1,1)"""
+   botonSiguiente=Button(root,text=">",command=lambda:AccionSiguiente(True))#image=imgSiguiente,compound = TOP)
    #botonSiguiente.place(x=140,y=370)
 
-Boton_Guardar()
+def Boton_Anterior():
+   global botonAnterior
+   botonAnterior=Button(root,text="<",command=lambda:AccionSiguiente(False))#image=imgSiguiente,compound = TOP)
+
 ###############################
 
 def El_menu():
@@ -313,18 +408,17 @@ def El_menu():
 
    Ayudamenu=Menu(barraMenu,tearoff=0)
    barraMenu.add_cascade(label="Ayuda",menu=Ayudamenu)
-   Ayudamenu.add_command(label="Acerca de...")
+   Ayudamenu.add_command(label="Acerca de...", command=lambda: The_ID())
    Ayudamenu.add_command(label="Licencia")
 
 def borra_campos():
-   valorID.set("")
+   #valorID.set("")
    datosNombre.set("")
    datosPsword.set("")
    datosApellido.set("")
    datosDireccion.set("")
    textoComentario.delete(1.0,END)
    
-
 def funciones():
    El_menu()
    Label_ID()
@@ -346,6 +440,8 @@ def funciones():
    Boton_Guardar()
    Boton_Cancelar()
    Boton_Siguiente()
+   Boton_Anterior()
+   Boton_x()
 
 funciones()
 

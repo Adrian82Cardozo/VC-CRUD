@@ -281,23 +281,34 @@ def ocultar(tipo):
       botonCancelar.place_forget()
       originales=True
    elif tipo=="Leer" and originales==True:
-      botonSiguiente.place(x=140,y=370)
-      botonAnterior.place(x=75,y=370)
+      botonUltimo.place(x=190,y=370)
+      botonSiguiente.place(x=160,y=370)
+      botonAnterior.place(x=95,y=370)
+      botonPrimero.place(x=65,y=370)
+      botonX.place(x=128,y=370)
       AccionLeer()
       botonCrear.place_forget()
       botonLeer.place_forget()
       botonActualizar.place_forget()
       botonBorrar.place_forget()
       originales=False
-   elif tipo=="Leer"and originales==True:
+   elif tipo=="Leer"and originales==False:
       botonCrear.place(x=10,y=370)
       botonLeer.place(x=75,y=370)
       botonActualizar.place(x=140,y=370)
       botonBorrar.place(x=210,y=370)
+      global First
+      global Indice
+      First = False
+      Indice=0
+      botonUltimo.place_forget()
       botonSiguiente.place_forget()
       botonAnterior.place_forget()
+      botonPrimero.place_forget()
       botonX.place_forget()
       originales=True
+      borra_campos()
+      valorID.set("")
 
 def Boton_Crear():
    global botonCrear
@@ -333,48 +344,82 @@ def Boton_Cancelar():
    #botonCancelar.place(x=140,y=370)
 
 First=False
+Ya=False
+Y4=False
+Poraqui=False
 
-def AccionSiguiente(Siguiente):
+def AccionSiguiente(Siguiente,Ultimo="No"):
    The_ID()
    global First
    global Cambio
    global Indice
+   global Ya
+   global Y4
+   global Poraqui
    if Siguiente==True:
       Cambio=1
    else:
       Cambio=-1
    if First==False:
       Indice =0
-   #   Ultima_ID()
-   #   Indice= lastID
+      #Ultima_ID()
+      #Indice= lastID
       First=True
    else:
-      Indice= Indice + Cambio
+      if Ultimo =="No":
+         Indice= Indice + Cambio
+      elif Ultimo =="True" or Ya ==True:
+         if Ya ==True:
+            Ya=False
+            if Siguiente ==True:
+               valorID.set(TheIDs[0])
+            else:
+               valorID.set(TheIDs[-2])
+            Poraqui=True
+         else:
+            Ya=True
+      elif Ultimo =="False" or Y4==True:
+         if Y4 ==True:
+            Y4=False
+            if Siguiente ==True:
+               valorID.set(TheIDs[1])
+            else:
+               valorID.set(TheIDs[-1])
+            Poraqui=True
+         else:
+            Y4=True
+   
    try:
-      En=TheIDs[Indice]
-      valorID.set(En)
+      if Poraqui==False:
+         valorID.set(TheIDs[Indice])
+      else:
+         Poraqui=False
    except IndexError:
       First=False
       AccionSiguiente(Siguiente)
       
    AccionLeer()
-   
-   """
-   try:
-      valorID.set(int(valorID.get()) + 1)
-   except ValueError:
-      valorID.set(int(0) + 1)
-   AccionLeer()
-   """
 
-def Accion_Ultimo():
-   pass
+def AccionUltimo():
+   The_ID()
+   valorID.set(TheIDs[-1])
+   AccionSiguiente="True"
+   #First=False
+   AccionLeer()
+
+def AccionPrimero():
+   The_ID()
+   valorID.set(TheIDs[0])
+   AccionSiguiente="False"
+   #First=False
+   AccionLeer()
+
 
 Cambio= 0
 
 def Boton_x():
    global botonX
-   botonX=Button(root, text="X", width=7,command=lambda:ocultar("Actualizar")) 
+   botonX=Button(root, text="X",command=lambda:ocultar("Leer")) 
    
 def Boton_Siguiente():
    global botonSiguiente
@@ -386,6 +431,14 @@ def Boton_Siguiente():
 def Boton_Anterior():
    global botonAnterior
    botonAnterior=Button(root,text="<",command=lambda:AccionSiguiente(False))#image=imgSiguiente,compound = TOP)
+
+def Boton_Ultimo():
+   global botonUltimo
+   botonUltimo=Button(root,text=">>",command=lambda:AccionUltimo())#image=imgSiguiente,compound = TOP)
+
+def Boton_Primero():
+   global botonPrimero
+   botonPrimero=Button(root,text="<<",command=lambda:AccionPrimero())#image=imgSiguiente,compound = TOP)
 
 ###############################
 
@@ -408,7 +461,7 @@ def El_menu():
 
    Ayudamenu=Menu(barraMenu,tearoff=0)
    barraMenu.add_cascade(label="Ayuda",menu=Ayudamenu)
-   Ayudamenu.add_command(label="Acerca de...", command=lambda: The_ID())
+   Ayudamenu.add_command(label="Acerca de...")
    Ayudamenu.add_command(label="Licencia")
 
 def borra_campos():
@@ -439,7 +492,9 @@ def funciones():
    Boton_Borrar()
    Boton_Guardar()
    Boton_Cancelar()
+   Boton_Ultimo()
    Boton_Siguiente()
+   Boton_Primero()
    Boton_Anterior()
    Boton_x()
 

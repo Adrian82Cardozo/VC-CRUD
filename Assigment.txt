@@ -1,0 +1,78 @@
+// Codigo por Adrian Cardozo
+#include <iostream>
+#include <stdlib.h>
+using namespace std;
+bool M;
+int number;
+
+// Driver Code
+int check() {
+    while (true) {
+        std::cin >> number;
+
+        if (!std::cin.fail()) {
+            break; // Exit loop if input is valid
+        }
+
+        std::cout << "Por favor, ingrese un numero: ";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+    return number;
+}
+
+
+
+int main()
+{   
+    setlocale(LC_ALL, "");
+    system("Color 07");
+    cout << "=============Identificador de etapa por edad================\nIngrese su genero(0 masculino, 1 femenino): ";
+    check();
+    while (number > 1) {
+        cout << "Por favor, ingrese 0 para masculino o 1 para femenino: ";
+        check();
+    }
+    if (number == 0) M = true;
+    else M = false;
+    cout << "\nBien, ahora ingrese su edad: ";
+    check();
+    if (number >= 0 && number <= 4) {
+        if (M == true) cout << "Eres un bebe\n";
+        else cout << "Eres una bebe\n";
+    }
+    else if (number >= 5 && number <= 13) {
+        if (M == true) cout << "Eres un niño\n";
+        else cout << "Eres una niña\n";
+    }
+    else if (number >= 14 && number <= 17) {
+        if (M == true) cout << "Eres un adolescente\n";
+        else cout << "Eres una adolescente\n";
+    }
+    else if (number >= 18 && number <= 35) {
+        if (M == true) cout << "Eres un adulto joven o un señorito \n";
+        else cout << "Eres una adulta joven o una señorita\n";
+    }
+    else if (number >= 36 && number <= 64) {
+        if (M == true) cout << "Eres un adulto o un señor \n";
+        else cout << "Eres una adulta o una señora\n";
+    }
+    else {
+        if (M == true) cout << "Eres un señor de tercera edad \n";
+        else cout << "Eres una señora de tercera edad\n";
+    }
+    // 0 for background Color(Black)
+    // A for text color(Green)
+    /*
+    id	Color	id	Color
+    1	Blue	9	Light Blue
+    2	Green	0	Black
+    3	Aqua	A	Light Green
+    4	Red	    B	Light Aqua
+    5	Purple	C	Light Red
+    6	Yellow	D	Light Purple
+    7	White	E	Light Yellow
+    8	Gray	F	Bright White*/
+    system("Color 0A");
+    system("pause");
+}
